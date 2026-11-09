@@ -1,0 +1,43 @@
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+.venv/
+venv/
+
+# Local settings and secrets
+.env
+.env.*
+!.env.example
+
+# Frontend dependencies and build output
+node_modules/
+dist/
+build/
+
+# Editor and operating system files
+.vscode/
+.idea/
+*.swp
+.DS_Store
+Thumbs.db
+
+# Local Codex instructions and skills
+AGENTS.md
+AGENTS.override.md
+/.agents/
+/.codex/
+/docs/HANDOFF.md
+/docs/INSIGHTS.md
+/docs/workflow-setup.md
+/docs/stages/
+
+# Local databases and logs
+*.sqlite
+*.sqlite3
+*.db
+*.log
