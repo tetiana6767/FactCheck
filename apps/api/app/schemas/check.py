@@ -4,6 +4,8 @@ from typing import Annotated, Literal
 
 from pydantic import BaseModel, ConfigDict, Field, StringConstraints
 
+from app.schemas.agent import LinguisticFlag, ModelRun, SingleAgentAnalysis
+
 ClaimText = Annotated[
     str,
     StringConstraints(strip_whitespace=True, min_length=1, max_length=10_000),
@@ -58,10 +60,18 @@ class CheckResponse(BaseModel):
     claim: str
     verdict: Literal["insufficient_evidence"]
     explanation: str
-    linguistic_flags: list[str] = Field(default_factory=list)
+    linguistic_flags: list[LinguisticFlag] = Field(default_factory=list)
     claims: list[Claim] = Field(default_factory=list)
     evidence: list[Evidence] = Field(default_factory=list)
     evidence_snapshot: EvidenceSnapshot = Field(default_factory=EvidenceSnapshot)
+    agent_analysis: SingleAgentAnalysis | None = None
+    model_run: ModelRun = Field(
+        default_factory=lambda: ModelRun(
+            mode="disabled",
+            status="not_configured",
+            error_code="openrouter_not_configured",
+        )
+    )
 
 
 class HealthResponse(BaseModel):

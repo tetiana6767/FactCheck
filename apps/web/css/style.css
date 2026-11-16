@@ -143,6 +143,12 @@ button:disabled {
   color: #52647c;
 }
 
+.section-note {
+  margin-top: -4px;
+  color: #52647c;
+  font-size: 0.92rem;
+}
+
 @media (max-width: 560px) {
   .layout {
     width: min(100% - 20px, 920px);

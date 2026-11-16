@@ -31,6 +31,8 @@ def test_check_returns_deterministic_report() -> None:
     ]
     assert report["evidence"][0]["claim_id"] == "claim-1"
     assert report["evidence_snapshot"]["items"] == report["evidence"]
+    assert report["agent_analysis"] is None
+    assert report["model_run"]["status"] == "not_configured"
 
 
 def test_check_rejects_empty_claim() -> None:
@@ -61,3 +63,19 @@ def test_check_handles_text_without_checkable_claims() -> None:
     assert response.status_code == 200
     assert response.json()["claims"] == []
     assert response.json()["evidence"] == []
+
+
+def test_check_keeps_linguistic_signals_separate_from_verdict() -> None:
+    response = client.post(
+        "/api/check",
+        json={"claim": "ТЕРМІНОВО!!! Ви не повірите цій новині."},
+    )
+
+    report = response.json()
+    assert response.status_code == 200
+    assert report["verdict"] == "insufficient_evidence"
+    assert {flag["kind"] for flag in report["linguistic_flags"]} == {
+        "sensational_phrase",
+        "uppercase_emphasis",
+        "excessive_punctuation",
+    }

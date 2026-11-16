@@ -6,14 +6,15 @@ from fastapi import APIRouter, Depends
 
 from app.schemas.check import CheckRequest, CheckResponse, HealthResponse
 from app.services.check_service import CheckService
+from app.services.model_factory import build_model_gateway
 
 router = APIRouter(prefix="/api")
 
 
 def get_check_service() -> CheckService:
-    """Створити сервіс детермінованої перевірки."""
+    """Створити сервіс перевірки з адаптером із конфігурації."""
 
-    return CheckService()
+    return CheckService(model_gateway=build_model_gateway())
 
 
 @router.get("/health", response_model=HealthResponse)
