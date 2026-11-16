@@ -11,7 +11,7 @@
     <section class="intro">
       <p class="eyebrow">AI Agents for Digital Trust</p>
       <h1>Перевірка тверджень</h1>
-      <p>Введіть новину або окреме твердження. Поточна версія перевіряє роботу API та ще не шукає докази у вебі.</p>
+      <p>Введіть новину або окреме твердження. Поточна версія виділяє тези й шукає лише в локальному навчальному корпусі.</p>
     </section>
 
     <section class="card" aria-labelledby="check-title">
@@ -33,6 +33,14 @@
       <p id="explanation">Після запиту тут з’явиться пояснення.</p>
       <p class="label">Текст</p>
       <p id="checked-claim" class="claim-preview">—</p>
+      <h3>Виділені твердження</h3>
+      <div id="claims" class="result-list">
+        <p class="empty-state">Твердження ще не виділялися.</p>
+      </div>
+      <h3>Тестові докази</h3>
+      <div id="evidence" class="result-list">
+        <p class="empty-state">Докази ще не шукалися.</p>
+      </div>
     </section>
   </main>
   <script src="/js/app.js" defer></script>

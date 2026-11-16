@@ -18,17 +18,19 @@ def test_check_returns_deterministic_report() -> None:
     response = client.post("/api/check", json={"claim": "  Київ — столиця України.  "})
 
     assert response.status_code == 200
-    assert response.json() == {
-        "claim": "Київ — столиця України.",
-        "verdict": "insufficient_evidence",
-        "explanation": (
-            "Твердження прийнято до аналізу. Пошук і перевірку джерел "
-            "буде підключено на наступному етапі, тому доказів для "
-            "фактологічного висновку поки недостатньо."
-        ),
-        "linguistic_flags": [],
-        "evidence": [],
-    }
+    report = response.json()
+    assert report["claim"] == "Київ — столиця України."
+    assert report["verdict"] == "insufficient_evidence"
+    assert report["claims"] == [
+        {
+            "id": "claim-1",
+            "text": "Київ — столиця України.",
+            "start": 0,
+            "end": 23,
+        }
+    ]
+    assert report["evidence"][0]["claim_id"] == "claim-1"
+    assert report["evidence_snapshot"]["items"] == report["evidence"]
 
 
 def test_check_rejects_empty_claim() -> None:
@@ -48,3 +50,14 @@ def test_web_client_is_served() -> None:
 
     assert response.status_code == 200
     assert "FactCheck" in response.text
+
+
+def test_check_handles_text_without_checkable_claims() -> None:
+    response = client.post(
+        "/api/check",
+        json={"claim": "На мою думку, це чудово. Чи погоджуєтеся ви?"},
+    )
+
+    assert response.status_code == 200
+    assert response.json()["claims"] == []
+    assert response.json()["evidence"] == []
