@@ -50,6 +50,8 @@ class SingleAgentAnalysis(BaseModel):
     linguistic_flags: tuple[LinguisticFlag, ...]
     claim_assessments: tuple[ClaimAssessment, ...]
     uncertainties: tuple[str, ...]
+    confidence: float = Field(ge=0, le=1)
+    high_risk: bool
 
 
 class ModelRun(BaseModel):
@@ -64,6 +66,7 @@ class ModelRun(BaseModel):
     prompt_tokens: int | None = Field(default=None, ge=0)
     completion_tokens: int | None = Field(default=None, ge=0)
     total_tokens: int | None = Field(default=None, ge=0)
+    cost_usd: float | None = Field(default=None, ge=0)
     error_code: str | None = None
 
 

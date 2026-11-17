@@ -2,9 +2,20 @@
 
 from fastapi.testclient import TestClient
 
+from app.api.routes import get_check_service
 from app.main import app
+from app.services.check_service import CheckService
 
 client = TestClient(app)
+
+
+def get_test_check_service() -> CheckService:
+    """Не дозволити API-тестам виконувати зовнішні модельні запити."""
+
+    return CheckService()
+
+
+app.dependency_overrides[get_check_service] = get_test_check_service
 
 
 def test_health_returns_ready_status() -> None:

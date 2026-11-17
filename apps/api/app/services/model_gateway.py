@@ -5,6 +5,7 @@ from typing import Protocol
 
 from app.schemas.agent import ModelResult, ModelRun
 from app.schemas.check import Claim, EvidenceSnapshot
+from app.schemas.multi_agent import AgentRoleResult
 
 
 @dataclass(frozen=True)
@@ -14,6 +15,7 @@ class ModelContext:
     text: str
     claims: tuple[Claim, ...]
     evidence_snapshot: EvidenceSnapshot
+    prior_results: tuple[AgentRoleResult, ...] = ()
 
 
 class ModelGateway(Protocol):

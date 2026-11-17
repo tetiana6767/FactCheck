@@ -10,6 +10,7 @@
   const checkedClaim = document.getElementById("checked-claim");
   const linguisticFlags = document.getElementById("linguistic-flags");
   const modelReport = document.getElementById("model-report");
+  const multiAgentReport = document.getElementById("multi-agent-report");
   const claims = document.getElementById("claims");
   const evidence = document.getElementById("evidence");
 
@@ -29,6 +30,7 @@
       Array.isArray(report.linguistic_flags) ? report.linguistic_flags : [],
     );
     renderModelReport(report.model_run, report.agent_analysis);
+    renderMultiAgentReport(report.multi_agent_report);
     renderClaims(Array.isArray(report.claims) ? report.claims : []);
     const evidenceItems = report.evidence_snapshot?.items ?? report.evidence ?? [];
     renderEvidence(Array.isArray(evidenceItems) ? evidenceItems : []);
@@ -100,10 +102,92 @@
       const model = run.model || "невідома модель";
       const latency = run.latency_ms ?? "—";
       const tokens = run.total_tokens ?? "—";
-      metadata.textContent = `${model} · ${latency} мс · ${tokens} токенів`;
+      const cost = run.cost_usd == null
+        ? "вартість —"
+        : `$${Number(run.cost_usd).toFixed(6)}`;
+      metadata.textContent = `${model} · ${latency} мс · ${tokens} токенів · ${cost}`;
       article.append(metadata);
     }
     modelReport.append(article);
+  }
+
+  function renderMultiAgentReport(report) {
+    multiAgentReport.replaceChildren();
+    if (!report) {
+      multiAgentReport.append(emptyMessage(
+        "Мультиагентний граф вимкнено або ще не запускався.",
+      ));
+      return;
+    }
+
+    const roleLabels = {
+      claim: "Твердження",
+      evidence: "Докази",
+      source: "Джерела",
+      linguistic: "Мовний аналіз",
+      skeptic: "Скептик",
+      verifier: "Верифікатор",
+      arbiter: "Арбітр",
+    };
+    const integral = report.integral || {};
+    const overview = document.createElement("article");
+    overview.className = "result-item agent-overview";
+    const heading = document.createElement("h4");
+    heading.textContent = report.execution_mode === "research"
+      ? "Повний дослідницький режим"
+      : "Економний режим";
+    const metrics = document.createElement("dl");
+    metrics.className = "metric-grid";
+    [
+      ["Інтегральна сила", integral.score],
+      ["Покриття доказами", integral.coverage],
+      ["Узгодженість", integral.consensus],
+      ["Підтримка", integral.support],
+      ["Спростування", integral.refutation],
+    ].forEach(([label, value]) => {
+      const term = document.createElement("dt");
+      term.textContent = label;
+      const definition = document.createElement("dd");
+      definition.textContent = `${Math.round(Number(value || 0) * 100)}%`;
+      metrics.append(term, definition);
+    });
+    const cost = document.createElement("p");
+    cost.className = "item-id";
+    cost.textContent = `Загальна вартість: $${Number(
+      report.total_cost_usd || 0,
+    ).toFixed(6)}`;
+    overview.append(heading, metrics, cost);
+    multiAgentReport.append(overview);
+
+    (report.role_results || []).forEach((result) => {
+      const article = document.createElement("article");
+      article.className = "result-item agent-role";
+      const title = document.createElement("h4");
+      title.textContent = roleLabels[result.role] || result.role;
+      const summary = document.createElement("p");
+      summary.textContent = result.analysis?.summary
+        || `Роль не завершена: ${result.run?.error_code || "невідома помилка"}.`;
+      const metadata = document.createElement("p");
+      metadata.className = "item-id";
+      metadata.textContent = [
+        result.run?.model || "модель не визначена",
+        result.run?.status || "без статусу",
+        result.run?.total_tokens == null
+          ? "токени —"
+          : `${result.run.total_tokens} токенів`,
+      ].join(" · ");
+      article.append(title, summary, metadata);
+      multiAgentReport.append(article);
+    });
+
+    const skipped = (report.skipped_roles || []).map(
+      (role) => roleLabels[role] || role,
+    );
+    if (skipped.length > 0) {
+      multiAgentReport.append(emptyMessage(
+        `Пропущені економною політикою ролі: ${skipped.join(", ")}.`,
+      ));
+    }
   }
 
   function renderEvidence(items) {
@@ -139,7 +223,7 @@
     }
 
     const controller = new AbortController();
-    const timeout = window.setTimeout(() => controller.abort(), 45_000);
+    const timeout = window.setTimeout(() => controller.abort(), 120_000);
     setPending(true);
     status.textContent = "Надсилаємо твердження до API…";
 
@@ -174,6 +258,9 @@
       emptyMessage("Мовний аналіз ще не виконувався."),
     );
     modelReport.replaceChildren(emptyMessage("Модель ще не запускалася."));
+    multiAgentReport.replaceChildren(
+      emptyMessage("Мультиагентний граф ще не запускався."),
+    );
     claims.replaceChildren(emptyMessage("Твердження ще не виділялися."));
     evidence.replaceChildren(emptyMessage("Докази ще не шукалися."));
     status.textContent = "Введіть текст для перевірки.";

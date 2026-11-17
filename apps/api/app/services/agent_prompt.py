@@ -26,6 +26,17 @@ class AgentPromptBuilder:
             "text": context.text,
             "claims": [claim.model_dump(mode="json") for claim in context.claims],
             "evidence_snapshot": context.evidence_snapshot.model_dump(mode="json"),
+            "prior_agent_results": [
+                {
+                    "role": result.role.value,
+                    "analysis": (
+                        result.analysis.model_dump(mode="json")
+                        if result.analysis is not None
+                        else None
+                    ),
+                }
+                for result in context.prior_results
+            ],
         }
         return [
             {"role": "system", "content": SYSTEM_PROMPT},

@@ -149,6 +149,27 @@ button:disabled {
   font-size: 0.92rem;
 }
 
+.metric-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 6px 18px;
+  margin: 12px 0;
+}
+
+.metric-grid dt,
+.metric-grid dd {
+  margin: 0;
+}
+
+.metric-grid dd {
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+}
+
+.agent-role {
+  border-left: 4px solid #174ea6;
+}
+
 @media (max-width: 560px) {
   .layout {
     width: min(100% - 20px, 920px);

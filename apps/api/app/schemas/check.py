@@ -5,6 +5,7 @@ from typing import Annotated, Literal
 from pydantic import BaseModel, ConfigDict, Field, StringConstraints
 
 from app.schemas.agent import LinguisticFlag, ModelRun, SingleAgentAnalysis
+from app.schemas.multi_agent import MultiAgentReport
 
 ClaimText = Annotated[
     str,
@@ -65,6 +66,7 @@ class CheckResponse(BaseModel):
     evidence: list[Evidence] = Field(default_factory=list)
     evidence_snapshot: EvidenceSnapshot = Field(default_factory=EvidenceSnapshot)
     agent_analysis: SingleAgentAnalysis | None = None
+    multi_agent_report: MultiAgentReport | None = None
     model_run: ModelRun = Field(
         default_factory=lambda: ModelRun(
             mode="disabled",

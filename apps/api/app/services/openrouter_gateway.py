@@ -52,14 +52,26 @@ class OpenRouterGateway:
             )
 
     def _build_payload(self, context: ModelContext) -> dict[str, Any]:
-        return {
+        payload = {
             "model": self._settings.model,
             "messages": self._prompt_builder.build_messages(context),
             "response_format": self._prompt_builder.build_response_format(),
-            "provider": {"require_parameters": True},
+            "provider": {
+                "require_parameters": True,
+                "max_price": {
+                    "prompt": self._settings.max_input_price_per_million,
+                    "completion": self._settings.max_output_price_per_million,
+                },
+            },
             "temperature": 0,
-            "max_tokens": self._settings.max_tokens,
+            "max_completion_tokens": self._settings.max_tokens,
         }
+        if self._settings.fallback_models:
+            payload["models"] = [
+                self._settings.model,
+                *self._settings.fallback_models,
+            ]
+        return payload
 
     def _post(self, payload: dict[str, Any]) -> httpx.Response:
         headers = {
@@ -95,9 +107,17 @@ class OpenRouterGateway:
     ) -> ModelResult:
         try:
             envelope = response.json()
-            content = envelope["choices"][0]["message"]["content"]
+            choice = envelope["choices"][0]
+            if choice.get("finish_reason") == "length":
+                return self._failure(
+                    "invalid_response",
+                    "openrouter_truncated_response",
+                    started_at,
+                )
+            content = choice["message"]["content"]
             analysis = SingleAgentAnalysis.model_validate(json.loads(content))
             usage = envelope.get("usage", {})
+            actual_model = envelope.get("model", self._settings.model)
         except (json.JSONDecodeError, KeyError, IndexError, TypeError, ValidationError):
             return self._failure(
                 "invalid_response", "openrouter_invalid_response", started_at
@@ -107,12 +127,13 @@ class OpenRouterGateway:
             analysis=analysis,
             run=ModelRun(
                 mode="openrouter",
-                model=self._settings.model,
+                model=actual_model,
                 status="completed",
                 latency_ms=self._elapsed_ms(started_at),
                 prompt_tokens=usage.get("prompt_tokens"),
                 completion_tokens=usage.get("completion_tokens"),
                 total_tokens=usage.get("total_tokens"),
+                cost_usd=usage.get("cost"),
             ),
         )
 

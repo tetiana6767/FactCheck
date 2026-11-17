@@ -4,9 +4,10 @@ from typing import Annotated
 
 from fastapi import APIRouter, Depends
 
+from app.config.model_settings import ModelRoutingSettings
 from app.schemas.check import CheckRequest, CheckResponse, HealthResponse
 from app.services.check_service import CheckService
-from app.services.model_factory import build_model_gateway
+from app.services.workflow_factory import build_factcheck_workflow
 
 router = APIRouter(prefix="/api")
 
@@ -14,7 +15,11 @@ router = APIRouter(prefix="/api")
 def get_check_service() -> CheckService:
     """Створити сервіс перевірки з адаптером із конфігурації."""
 
-    return CheckService(model_gateway=build_model_gateway())
+    settings = ModelRoutingSettings()
+    return CheckService(
+        workflow=build_factcheck_workflow(settings),
+        execution_mode=settings.execution_mode,
+    )
 
 
 @router.get("/health", response_model=HealthResponse)

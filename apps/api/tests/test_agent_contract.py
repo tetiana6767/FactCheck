@@ -16,6 +16,8 @@ def test_agent_contract_rejects_unknown_fields() -> None:
                 "linguistic_flags": [],
                 "claim_assessments": [],
                 "uncertainties": [],
+                "confidence": 0.5,
+                "high_risk": False,
                 "unexpected": True,
             }
         )

@@ -15,6 +15,9 @@ class OpenRouterSettings:
     max_tokens: int = 1_200
     max_retries: int = 2
     retry_delay_seconds: float = 0.5
+    fallback_models: tuple[str, ...] = ()
+    max_input_price_per_million: float = 0.15
+    max_output_price_per_million: float = 0.60
 
     @classmethod
     def from_env(cls) -> "OpenRouterSettings":
