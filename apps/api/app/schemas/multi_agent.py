@@ -28,7 +28,14 @@ class IntegralAssessment(BaseModel):
     coverage: float = Field(ge=0, le=1)
     consensus: float = Field(ge=0, le=1)
     score: float = Field(ge=0, le=1)
-    status: Literal["insufficient_evidence"] = "insufficient_evidence"
+    trust_score: float = Field(default=0, ge=0, le=1)
+    risk_score: float = Field(default=1, ge=0, le=1)
+    status: Literal[
+        "supported",
+        "refuted",
+        "conflicting",
+        "insufficient_evidence",
+    ] = "insufficient_evidence"
 
 
 class MultiAgentReport(BaseModel):

@@ -7,6 +7,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 RoutingMode = Literal["role", "single"]
 ExecutionMode = Literal["economy", "research"]
+SearchEngine = Literal["exa", "parallel", "perplexity"]
 
 
 class ModelRoutingSettings(BaseSettings):
@@ -35,6 +36,13 @@ class ModelRoutingSettings(BaseSettings):
     model_arbiter: str = "openai/gpt-4o-mini"
     model_fallback: str = "mistralai/mistral-small-3.2-24b-instruct"
 
+    web_search_enabled: bool = True
+    web_search_model: str = "openai/gpt-4o-mini"
+    web_search_engine: SearchEngine = "parallel"
+    web_search_mode: str = "basic"
+    web_search_max_claims: int = Field(default=3, ge=1, le=10)
+    web_search_max_results: int = Field(default=3, ge=1, le=10)
+
     timeout_seconds: float = Field(default=30.0, gt=0, le=120)
     max_tokens: int = Field(default=1_200, ge=100, le=16_384)
     max_retries: int = Field(default=2, ge=0, le=5)
@@ -52,6 +60,7 @@ class ModelRoutingSettings(BaseSettings):
         "model_verifier",
         "model_arbiter",
         "model_fallback",
+        "web_search_model",
     )
     @classmethod
     def validate_model_id(cls, value: str) -> str:
@@ -67,3 +76,9 @@ class ModelRoutingSettings(BaseSettings):
         """Перевірити наявність непорожнього секретного ключа."""
 
         return bool(self.api_key and self.api_key.get_secret_value().strip())
+
+    @property
+    def web_search_ready(self) -> bool:
+        """Увімкнути вебпошук лише за наявності ключа."""
+
+        return self.enabled and self.web_search_enabled

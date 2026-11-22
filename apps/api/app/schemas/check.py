@@ -4,7 +4,12 @@ from typing import Annotated, Literal
 
 from pydantic import BaseModel, ConfigDict, Field, StringConstraints
 
-from app.schemas.agent import LinguisticFlag, ModelRun, SingleAgentAnalysis
+from app.schemas.agent import (
+    ClaimStatus,
+    LinguisticFlag,
+    ModelRun,
+    SingleAgentAnalysis,
+)
 from app.schemas.multi_agent import MultiAgentReport
 
 ClaimText = Annotated[
@@ -43,7 +48,7 @@ class Evidence(BaseModel):
     url: str
     quote: str | None = None
     source_date: str | None = None
-    source_type: Literal["test_corpus"]
+    source_type: Literal["test_corpus", "web"]
 
 
 class EvidenceSnapshot(BaseModel):
@@ -59,7 +64,7 @@ class CheckResponse(BaseModel):
     """Структурований звіт із твердженнями й тестовими доказами."""
 
     claim: str
-    verdict: Literal["insufficient_evidence"]
+    verdict: ClaimStatus
     explanation: str
     linguistic_flags: list[LinguisticFlag] = Field(default_factory=list)
     claims: list[Claim] = Field(default_factory=list)

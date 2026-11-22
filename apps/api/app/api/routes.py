@@ -1,4 +1,4 @@
-"""HTTP-маршрути першого етапу FactCheck."""
+"""HTTP-маршрути застосунку FactCheck."""
 
 from typing import Annotated
 
@@ -7,6 +7,7 @@ from fastapi import APIRouter, Depends
 from app.config.model_settings import ModelRoutingSettings
 from app.schemas.check import CheckRequest, CheckResponse, HealthResponse
 from app.services.check_service import CheckService
+from app.services.search_factory import build_search_gateway
 from app.services.workflow_factory import build_factcheck_workflow
 
 router = APIRouter(prefix="/api")
@@ -17,6 +18,7 @@ def get_check_service() -> CheckService:
 
     settings = ModelRoutingSettings()
     return CheckService(
+        search_gateway=build_search_gateway(settings),
         workflow=build_factcheck_workflow(settings),
         execution_mode=settings.execution_mode,
     )
@@ -34,6 +36,6 @@ def check_claim(
     request: CheckRequest,
     service: Annotated[CheckService, Depends(get_check_service)],
 ) -> CheckResponse:
-    """Перевірити контракт запиту та повернути тестовий звіт."""
+    """Перевірити новину та повернути пояснюваний звіт."""
 
     return service.analyze(request)

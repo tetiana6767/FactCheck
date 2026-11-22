@@ -25,7 +25,7 @@ from app.services.search_gateway import InMemorySearchGateway, SearchGateway
 
 
 class CheckService:
-    """Сформувати простежуваний звіт без зовнішньої мережі."""
+    """Сформувати простежуваний звіт із налаштованих джерел."""
 
     def __init__(
         self,
@@ -60,11 +60,18 @@ class CheckService:
             snapshot,
             linguistic_flags,
         )
+        verdict = (
+            multi_agent_report.integral.status
+            if multi_agent_report is not None
+            else "insufficient_evidence"
+        )
 
         return CheckResponse(
             claim=request.claim,
-            verdict="insufficient_evidence",
-            explanation=self._build_explanation(len(claims), len(snapshot.items)),
+            verdict=verdict,
+            explanation=self._build_explanation(
+                len(claims), len(snapshot.items), verdict
+            ),
             linguistic_flags=list(linguistic_flags),
             claims=list(claims),
             evidence=list(snapshot.items),
@@ -124,15 +131,29 @@ class CheckService:
         ), report
 
     @staticmethod
-    def _build_explanation(claim_count: int, evidence_count: int) -> str:
+    def _build_explanation(
+        claim_count: int, evidence_count: int, verdict: str
+    ) -> str:
         if claim_count == 0:
             return (
                 "Перевірюваних тверджень за базовими правилами не виділено. "
                 "Сформулюйте конкретну декларативну тезу."
             )
+        if evidence_count == 0:
+            return (
+                f"Виділено тверджень: {claim_count}. Надійних джерел не "
+                "знайдено, тому маємо 0% довіри та 100% ризику покладатися "
+                "на цю новину. Це не доводить неправдивість, але "
+                "вимагає додаткової перевірки."
+            )
+        labels = {
+            "supported": "наявні докази переважно підтримують твердження",
+            "refuted": "наявні докази переважно спростовують твердження",
+            "conflicting": "джерела або оцінки суперечать одне одному",
+            "insufficient_evidence": "доказів ще недостатньо для висновку",
+        }
         return (
-            f"Виділено тверджень: {claim_count}. Записів у локальному "
-            f"тестовому корпусі: {evidence_count}. Тестовий корпус демонструє "
-            "простежуваність, але не замінює перевірку зовнішніх джерел, тому "
-            "доказів для фактологічного висновку недостатньо."
+            f"Виділено тверджень: {claim_count}. Знайдено джерел: "
+            f"{evidence_count}; {labels[verdict]}. Перегляньте оцінку кожної "
+            "тези та першоджерела нижче."
         )

@@ -69,7 +69,49 @@ def test_integral_score_exposes_conflicting_components() -> None:
     assert integral.coverage == 1
     assert integral.consensus == 0.5
     assert integral.score == 0.25
+    assert integral.trust_score == 0.25
+    assert integral.risk_score == 0.75
+    assert integral.status == "conflicting"
+
+
+def test_missing_assessments_mean_zero_trust_and_full_risk() -> None:
+    state = FactCheckGraphState(text="Неперевірена теза.")
+
+    integral = IntegralScoreCalculator().calculate(state)
+
+    assert integral.trust_score == 0
+    assert integral.risk_score == 1
     assert integral.status == "insufficient_evidence"
+
+
+def test_supported_claim_has_full_trust_and_low_risk() -> None:
+    result = AgentRoleResult(
+        role=AgentRole.ARBITER,
+        analysis=_analysis("supported"),
+        run=ModelRun(mode="mock", status="completed"),
+    )
+    state = _state().model_copy(update={"role_results": (result,)})
+
+    integral = IntegralScoreCalculator().calculate(state)
+
+    assert integral.trust_score == 1
+    assert integral.risk_score == 0
+    assert integral.status == "supported"
+
+
+def test_refuted_claim_has_full_risk() -> None:
+    result = AgentRoleResult(
+        role=AgentRole.ARBITER,
+        analysis=_analysis("refuted"),
+        run=ModelRun(mode="mock", status="completed"),
+    )
+    state = _state().model_copy(update={"role_results": (result,)})
+
+    integral = IntegralScoreCalculator().calculate(state)
+
+    assert integral.trust_score == 0
+    assert integral.risk_score == 1
+    assert integral.status == "refuted"
 
 
 def test_report_sums_actual_role_costs() -> None:

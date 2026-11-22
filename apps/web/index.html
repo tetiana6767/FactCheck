@@ -1,62 +1,154 @@
 <!doctype html>
-<html lang="uk">
+<html lang="uk" data-theme="system" data-font-size="standard" data-detail="balanced">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>FactCheck</title>
+  <meta name="description" content="Пояснювана мультиагентна перевірка новин і тверджень українською мовою.">
+  <title>FactCheck — перевірка новин</title>
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Literata:opsz,wght@7..72,600;7..72,700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/css/style.css">
 </head>
 <body>
-  <main class="layout">
-    <section class="intro">
-      <p class="eyebrow">AI Agents for Digital Trust</p>
-      <h1>Перевірка тверджень</h1>
-      <p>Введіть новину або окреме твердження. Поточна версія виділяє тези й шукає лише в локальному навчальному корпусі.</p>
+  <header class="site-header">
+    <a class="brand" href="#main" aria-label="FactCheck — на початок сторінки">
+      <span class="brand-mark" aria-hidden="true">Ф</span>
+      <span>FactCheck</span>
+    </a>
+    <button id="settings-button" class="icon-button" type="button" aria-label="Відкрити налаштування">
+      <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M12 15.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7Z"/><path d="M19.4 15a1.7 1.7 0 0 0 .34 1.88l.06.06-2.83 2.83-.06-.06a1.7 1.7 0 0 0-1.88-.34 1.7 1.7 0 0 0-1.03 1.56V21h-4v-.09A1.7 1.7 0 0 0 9 19.36a1.7 1.7 0 0 0-1.88.34l-.06.06-2.83-2.83.06-.06A1.7 1.7 0 0 0 4.63 15a1.7 1.7 0 0 0-1.56-1.03H3v-4h.09A1.7 1.7 0 0 0 4.64 9a1.7 1.7 0 0 0-.34-1.88l-.06-.06 2.83-2.83.06.06A1.7 1.7 0 0 0 9 4.63a1.7 1.7 0 0 0 1.03-1.56V3h4v.09A1.7 1.7 0 0 0 15 4.64a1.7 1.7 0 0 0 1.88-.34l.06-.06 2.83 2.83-.06.06A1.7 1.7 0 0 0 19.37 9a1.7 1.7 0 0 0 1.56 1.03H21v4h-.09A1.7 1.7 0 0 0 19.4 15Z"/></svg>
+    </button>
+  </header>
+
+  <main id="main" class="layout">
+    <section class="hero" aria-labelledby="hero-title">
+      <p class="eyebrow">Кілька агентів. Один прозорий висновок.</p>
+      <h1 id="hero-title">Перевірте новину,<br><span>перш ніж довіряти</span></h1>
+      <p class="hero-copy">Вставте текст — система виділить факти, зіставить наявні докази та пояснить рівень довіри до доказової бази.</p>
     </section>
 
-    <section class="card" aria-labelledby="check-title">
-      <h2 id="check-title">Текст для аналізу</h2>
-      <label for="claim">Новина або твердження</label>
-      <textarea id="claim" rows="8" maxlength="10000" placeholder="Вставте текст…"></textarea>
-      <div class="actions">
-        <button id="check-button" type="button">Перевірити</button>
-        <button id="clear-button" type="button" class="secondary">Очистити</button>
+    <section class="checker-card" aria-labelledby="check-title">
+      <div class="section-heading">
+        <div>
+          <p class="step-label">Крок 1</p>
+          <h2 id="check-title">Що потрібно перевірити?</h2>
+        </div>
+        <span class="privacy-note">Зберігається лише у вашому браузері</span>
       </div>
-      <p id="status" role="status" aria-live="polite">Введіть текст для перевірки.</p>
+      <label class="sr-only" for="claim">Новина або твердження</label>
+      <div class="input-shell">
+        <textarea id="claim" rows="7" maxlength="10000" placeholder="Вставте новину, допис або окреме твердження…"></textarea>
+        <button id="clear-input" class="input-clear" type="button" aria-label="Очистити поле" hidden>×</button>
+        <span id="character-count" class="character-count">0 / 10 000</span>
+      </div>
+      <div id="recent-check" class="recent-check" hidden>
+        <span aria-hidden="true">↶</span>
+        <button id="restore-recent" type="button"></button>
+      </div>
+      <button id="check-button" class="primary-action" type="button">
+        <svg aria-hidden="true" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg>
+        <span>Перевірити</span>
+      </button>
+      <p id="status" class="form-status" role="status" aria-live="polite">Готові до перевірки.</p>
+      <div id="analysis-progress" class="analysis-progress" hidden aria-label="Хід аналізу">
+        <div class="progress-track"><span></span></div>
+        <p id="progress-message">Виділяємо перевірювані факти…</p>
+        <div class="agent-dots" aria-hidden="true"><span></span><span></span><span></span><span></span></div>
+      </div>
     </section>
 
-    <section class="card report" aria-labelledby="report-title">
-      <h2 id="report-title">Результат</h2>
-      <p class="label">Статус</p>
-      <p id="verdict" class="verdict">Результату ще немає</p>
-      <p class="label">Пояснення</p>
-      <p id="explanation">Після запиту тут з’явиться пояснення.</p>
-      <p class="label">Текст</p>
-      <p id="checked-claim" class="claim-preview">—</p>
-      <h3>Мовні сигнали</h3>
-      <p class="section-note">Ці ознаки описують стиль тексту, але не доводять його неправдивість.</p>
-      <div id="linguistic-flags" class="result-list">
-        <p class="empty-state">Мовний аналіз ще не виконувався.</p>
+    <section id="report" class="report" aria-labelledby="report-title" hidden>
+      <div class="report-heading">
+        <div>
+          <p class="step-label">Результат перевірки</p>
+          <h2 id="report-title">Що вдалося встановити</h2>
+        </div>
+        <button id="new-check-button" class="text-button" type="button">Нова перевірка</button>
       </div>
-      <h3>Підсумок моделі</h3>
-      <div id="model-report" class="result-list">
-        <p class="empty-state">Модель ще не запускалася.</p>
-      </div>
-      <h3>Мультиагентний звіт</h3>
-      <p class="section-note">Показує внесок ролей, витрати та складові інтегральної оцінки.</p>
-      <div id="multi-agent-report" class="result-list">
-        <p class="empty-state">Мультиагентний граф ще не запускався.</p>
-      </div>
-      <h3>Виділені твердження</h3>
-      <div id="claims" class="result-list">
-        <p class="empty-state">Твердження ще не виділялися.</p>
-      </div>
-      <h3>Тестові докази</h3>
-      <div id="evidence" class="result-list">
-        <p class="empty-state">Докази ще не шукалися.</p>
-      </div>
+      <article class="verdict-card">
+        <div id="confidence-ring" class="confidence-ring" style="--score: 0">
+          <div><strong id="confidence-value">0%</strong><span>рівень довіри</span></div>
+        </div>
+        <div class="verdict-copy">
+          <div class="status-row">
+            <span id="verdict" class="verdict-badge">Недостатньо доказів</span>
+            <span id="risk-level" class="risk-badge risk-medium">Середній ризик</span>
+          </div>
+          <h3 id="confidence-title">Потрібні додаткові джерела</h3>
+          <p id="explanation">Після перевірки тут з’явиться пояснення результату.</p>
+          <p class="score-note">Рівень довіри показує, наскільки твердження підтримане знайденими доказами. Ризик зростає, коли джерел бракує або вони суперечать одне одному.</p>
+        </div>
+      </article>
+      <section class="report-section" aria-labelledby="claim-source-title">
+        <div class="section-heading compact"><div><p class="step-label">Вхідні дані</p><h3 id="claim-source-title">Перевірений текст</h3></div></div>
+        <p id="checked-claim" class="claim-preview">—</p>
+      </section>
+      <section class="report-section" aria-labelledby="claims-title">
+        <div class="section-heading compact"><div><p class="step-label">Розбір</p><h3 id="claims-title">Окремі твердження</h3></div><span id="claims-count" class="count-badge">0</span></div>
+        <div id="claims" class="result-list"></div>
+      </section>
+      <section class="report-section" aria-labelledby="agents-title">
+        <div class="section-heading compact"><div><p class="step-label">Командна перевірка</p><h3 id="agents-title">Як працювали агенти</h3></div></div>
+        <div id="agent-overview" class="agent-overview"></div>
+        <div id="multi-agent-report" class="result-list detail-extended"></div>
+      </section>
+      <section class="report-section" aria-labelledby="evidence-title">
+        <div class="section-heading compact"><div><p class="step-label">Простежуваність</p><h3 id="evidence-title">Знайдені докази</h3></div><span id="evidence-count" class="count-badge">0</span></div>
+        <div id="evidence" class="result-list"></div>
+      </section>
+      <section class="report-section detail-full" aria-labelledby="signals-title">
+        <div class="section-heading compact"><div><p class="step-label">Контекст</p><h3 id="signals-title">Мовні сигнали</h3></div></div>
+        <p class="section-note">Мовні ознаки описують стиль, але самі по собі не доводять неправдивість.</p>
+        <div id="linguistic-flags" class="result-list"></div>
+      </section>
+      <section class="report-section detail-full" aria-labelledby="model-title">
+        <div class="section-heading compact"><div><p class="step-label">Технічні відомості</p><h3 id="model-title">Підсумок моделі</h3></div></div>
+        <div id="model-report" class="result-list"></div>
+      </section>
     </section>
   </main>
-  <script src="/js/app.js" defer></script>
+
+  <footer class="site-footer"><p>FactCheck пояснює наявні докази, але не замінює професійну перевірку важливих рішень.</p></footer>
+
+  <dialog id="settings-dialog" class="settings-dialog" aria-labelledby="settings-title">
+    <form method="dialog" class="settings-panel">
+      <div class="dialog-heading">
+        <div><p class="step-label">Персоналізація</p><h2 id="settings-title">Налаштування вигляду</h2></div>
+        <button class="icon-button" value="close" aria-label="Закрити налаштування">×</button>
+      </div>
+      <fieldset>
+        <legend>Тема</legend>
+        <div class="segmented-control three-columns">
+          <label><input type="radio" name="theme" value="light"><span>Світла</span></label>
+          <label><input type="radio" name="theme" value="dark"><span>Темна</span></label>
+          <label><input type="radio" name="theme" value="system"><span>Системна</span></label>
+        </div>
+      </fieldset>
+      <fieldset>
+        <legend>Розмір тексту</legend>
+        <div class="segmented-control three-columns">
+          <label><input type="radio" name="fontSize" value="standard"><span>Звичайний</span></label>
+          <label><input type="radio" name="fontSize" value="large"><span>Великий</span></label>
+          <label><input type="radio" name="fontSize" value="largest"><span>Найбільший</span></label>
+        </div>
+      </fieldset>
+      <fieldset>
+        <legend>Деталізація звіту</legend>
+        <div class="segmented-control three-columns">
+          <label><input type="radio" name="detail" value="concise"><span>Стисло</span></label>
+          <label><input type="radio" name="detail" value="balanced"><span>Збалансовано</span></label>
+          <label><input type="radio" name="detail" value="full"><span>Докладно</span></label>
+        </div>
+      </fieldset>
+      <div class="setting-row">
+        <div><strong>Запам’ятовувати перевірки</strong><p>Текст і результат залишаються лише в цьому браузері.</p></div>
+        <label class="switch"><input id="remember-history" type="checkbox"><span aria-hidden="true"></span><span class="sr-only">Запам’ятовувати перевірки</span></label>
+      </div>
+      <button id="clear-history" class="danger-button" type="button">Очистити локальну історію</button>
+    </form>
+  </dialog>
+  <script type="module" src="/js/app.js"></script>
 </body>
 </html>

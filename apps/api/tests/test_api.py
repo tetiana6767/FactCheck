@@ -44,6 +44,7 @@ def test_check_returns_deterministic_report() -> None:
     assert report["evidence_snapshot"]["items"] == report["evidence"]
     assert report["agent_analysis"] is None
     assert report["model_run"]["status"] == "not_configured"
+    assert "100%" not in report["explanation"]
 
 
 def test_check_rejects_empty_claim() -> None:
@@ -63,6 +64,17 @@ def test_web_client_is_served() -> None:
 
     assert response.status_code == 200
     assert "FactCheck" in response.text
+    assert 'lang="uk"' in response.text
+    assert "Перевірити" in response.text
+    assert "Налаштування вигляду" in response.text
+    assert "рівень довіри" in response.text
+
+
+def test_web_client_modules_are_served() -> None:
+    for path in ("app.js", "report.js", "settings.js", "storage.js"):
+        response = client.get(f"/js/{path}")
+
+        assert response.status_code == 200
 
 
 def test_check_handles_text_without_checkable_claims() -> None:
@@ -90,3 +102,16 @@ def test_check_keeps_linguistic_signals_separate_from_verdict() -> None:
         "uppercase_emphasis",
         "excessive_punctuation",
     }
+
+
+def test_check_explains_full_risk_when_no_sources_exist() -> None:
+    response = client.post(
+        "/api/check",
+        json={"claim": "Місяць учора впав на Землю."},
+    )
+
+    report = response.json()
+    assert response.status_code == 200
+    assert report["evidence"] == []
+    assert "0% довіри" in report["explanation"]
+    assert "100% ризику" in report["explanation"]

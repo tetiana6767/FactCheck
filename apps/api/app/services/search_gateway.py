@@ -14,6 +14,22 @@ class SearchGateway(Protocol):
         """Повернути впорядковані записи доказів."""
 
 
+class CompositeSearchGateway:
+    """Об'єднати локальні та зовнішні пошукові адаптери."""
+
+    def __init__(self, gateways: tuple[SearchGateway, ...]) -> None:
+        self._gateways = gateways
+
+    def search(self, claim: Claim) -> tuple[Evidence, ...]:
+        """Повернути унікальні докази у стабільному порядку."""
+
+        unique: dict[str, Evidence] = {}
+        for gateway in self._gateways:
+            for evidence in gateway.search(claim):
+                unique.setdefault(evidence.url, evidence)
+        return tuple(unique.values())
+
+
 @dataclass(frozen=True)
 class EvidenceRecord:
     """Запис локального тестового корпусу без прив'язки до запиту."""
