@@ -40,8 +40,8 @@ class ModelRoutingSettings(BaseSettings):
     web_search_model: str = "openai/gpt-4o-mini"
     web_search_engine: SearchEngine = "parallel"
     web_search_mode: str = "basic"
-    web_search_max_claims: int = Field(default=3, ge=1, le=10)
-    web_search_max_results: int = Field(default=3, ge=1, le=10)
+    web_search_max_claims: int = Field(default=5, ge=1, le=10)
+    web_search_max_results: int = Field(default=5, ge=1, le=10)
     web_search_max_uses: int = Field(default=2, ge=1, le=3)
 
     timeout_seconds: float = Field(default=30.0, gt=0, le=120)

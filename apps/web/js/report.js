@@ -32,17 +32,23 @@ function deriveRisk(report) {
   const conflict = Number(integral.support || 0) > 0 && Number(integral.refutation || 0) > 0;
   let value = Number(integral.risk_score ?? 1);
   if (highRisk || conflict) value = Math.max(value, 0.67);
+  const rounded = Math.round(value * 100);
   const label = value >= 0.67 ? "Високий ризик" : value >= 0.34 ? "Середній ризик" : "Низький ризик";
   const className = value >= 0.67 ? "risk-high" : value >= 0.34 ? "risk-medium" : "risk-low";
-  return { label: `${label}: ${percent(value)}`, className };
+  const color = value >= 0.67 ? "danger" : value >= 0.34 ? "warning" : "success";
+  const display = rounded === 0 ? "мінімальний" : `${rounded}%`;
+  return { value, label: `${label}: ${display}`, className, color };
 }
 
 function renderSummary(report) {
-  const integral = report.multi_agent_report?.integral || {};
-  const score = Math.round(Number(integral.trust_score || 0) * 100);
   const risk = deriveRisk(report);
-  document.getElementById("confidence-ring").style.setProperty("--score", score);
-  document.getElementById("confidence-value").textContent = `${score}%`;
+  const riskPercent = Math.round(risk.value * 100);
+  const ring = document.getElementById("confidence-ring");
+  const valueNode = document.getElementById("confidence-value");
+  ring.style.setProperty("--score", riskPercent);
+  ring.style.setProperty("--ring-color", `var(--${risk.color})`);
+  valueNode.classList.toggle("is-text", riskPercent === 0);
+  valueNode.textContent = riskPercent === 0 ? "Мінімальний" : `${riskPercent}%`;
   const titles = {
     supported: "Знайдені докази підтримують твердження",
     refuted: "Знайдені докази спростовують твердження",
@@ -157,7 +163,12 @@ function renderMetrics(multi) {
   const integral = multi?.integral || {};
   [["Рівень довіри", integral.trust_score ?? 0], ["Ризик довіряти", integral.risk_score ?? 1], ["Сила доказів", integral.score ?? 0], ["Покриття", integral.coverage ?? 0], ["Узгодженість", integral.consensus ?? 0]].forEach(([label, value]) => {
     const card = element("div", "metric-card");
-    card.append(element("strong", "", percent(value)), element("span", "", label));
+    const numeric = Math.round(Number(value || 0) * 100);
+    const display = numeric > 0
+      ? `${numeric}%`
+      : label === "Ризик довіряти" ? "Мінімальний"
+        : label === "Рівень довіри" ? "Не підтверджено" : "Немає даних";
+    card.append(element("strong", "", display), element("span", "", label));
     container.append(card);
   });
 }
@@ -180,7 +191,9 @@ function renderAgents(multi) {
     const body = element("div", "agent-body");
     body.append(element("p", "", result.analysis?.summary || "Агент не завершив аналіз."));
     if (result.analysis) {
-      body.append(element("p", "agent-meta", `Впевненість агента: ${percent(result.analysis.confidence)}${result.analysis.high_risk ? " · позначено високий ризик" : ""}`));
+      const confidence = Number(result.analysis.confidence || 0) > 0
+        ? percent(result.analysis.confidence) : "не визначена";
+      body.append(element("p", "agent-meta", `Впевненість агента: ${confidence}${result.analysis.high_risk ? " · позначено високий ризик" : ""}`));
       result.analysis.claim_assessments.forEach((item) => body.append(renderAssessment(item)));
       if (result.analysis.uncertainties?.length) {
         const list = element("ul", "uncertainty-list");

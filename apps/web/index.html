@@ -68,8 +68,8 @@
         <button id="new-check-button" class="text-button" type="button">Нова перевірка</button>
       </div>
       <article class="verdict-card">
-        <div id="confidence-ring" class="confidence-ring" style="--score: 0">
-          <div><strong id="confidence-value">0%</strong><span>рівень довіри</span></div>
+        <div id="confidence-ring" class="confidence-ring" style="--score: 100; --ring-color: var(--danger)">
+          <div><strong id="confidence-value">—</strong><span>ризик довіряти</span></div>
         </div>
         <div class="verdict-copy">
           <div class="status-row">
@@ -78,7 +78,7 @@
           </div>
           <h3 id="confidence-title">Потрібні додаткові джерела</h3>
           <p id="explanation">Після перевірки тут з’явиться пояснення результату.</p>
-          <p class="score-note">Рівень довіри показує, наскільки твердження підтримане знайденими доказами. Ризик зростає, коли джерел бракує або вони суперечать одне одному.</p>
+          <p class="score-note">Головний відсоток — це ризик довіряти або поширювати новину. Що менше надійних підтверджень або що сильніші контрдокази, то вищий ризик.</p>
         </div>
       </article>
       <section class="report-section" aria-labelledby="claim-source-title">

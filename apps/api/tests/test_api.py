@@ -114,5 +114,6 @@ def test_check_explains_full_risk_when_no_sources_exist() -> None:
     report = response.json()
     assert response.status_code == 200
     assert report["evidence"] == []
-    assert "0% довіри" in report["explanation"]
+    assert "0% довіри" not in report["explanation"]
+    assert "Довіру не підтверджено" in report["explanation"]
     assert "100% ризику" in report["explanation"]
