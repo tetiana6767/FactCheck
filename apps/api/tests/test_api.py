@@ -68,6 +68,7 @@ def test_web_client_is_served() -> None:
     assert "Перевірити" in response.text
     assert "Налаштування вигляду" in response.text
     assert "рівень довіри" in response.text
+    assert "Джерела за і проти" in response.text
 
 
 def test_web_client_modules_are_served() -> None:

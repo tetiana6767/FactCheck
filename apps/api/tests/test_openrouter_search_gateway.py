@@ -14,6 +14,7 @@ def _settings(**overrides) -> ModelRoutingSettings:
         "api_key": "test-key",
         "web_search_max_claims": 1,
         "web_search_max_results": 2,
+        "web_search_max_uses": 2,
     }
     values.update(overrides)
     return ModelRoutingSettings(_env_file=None, **values)
@@ -23,7 +24,10 @@ def test_search_converts_only_web_citations_to_evidence() -> None:
     def handler(request: httpx.Request) -> httpx.Response:
         payload = json.loads(request.content)
         assert payload["tools"][0]["type"] == "openrouter:web_search"
-        assert payload["tools"][0]["parameters"]["max_uses"] == 1
+        parameters = payload["tools"][0]["parameters"]
+        assert parameters["max_uses"] == 2
+        assert parameters["max_total_results"] == 4
+        assert "спростування" in payload["messages"][1]["content"]
         return httpx.Response(
             200,
             json={

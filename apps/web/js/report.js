@@ -118,7 +118,19 @@ function appendSource(container, item) {
   container.append(source);
 }
 
-function renderEvidence(items) {
+function evidenceUsage(item, report) {
+  const assessment = claimAssessment(report, item.claim_id);
+  if (!assessment?.evidence_ids?.includes(item.id)) return "Джерело для перевірки";
+  const labels = {
+    supported: "Використано для підтвердження",
+    refuted: "Використано для спростування",
+    conflicting: "Суперечливий доказ",
+    insufficient_evidence: "Потребує додаткової перевірки",
+  };
+  return labels[assessment.status] || "Джерело для перевірки";
+}
+
+function renderEvidence(items, report) {
   const container = document.getElementById("evidence");
   document.getElementById("evidence-count").textContent = items.length;
   container.replaceChildren();
@@ -130,6 +142,7 @@ function renderEvidence(items) {
     const claimNumber = item.claim_id?.replace(/^claim-/, "") || "—";
     card.append(
       element("span", "item-id", `Доказ для твердження ${claimNumber}`),
+      element("span", "status-chip", evidenceUsage(item, report)),
       element("h4", "", item.title),
       element("blockquote", "", item.quote || "Цитату не надано."),
     );
@@ -213,7 +226,7 @@ export function renderReport(report) {
   const evidence = report.evidence_snapshot?.items ?? report.evidence ?? [];
   renderSummary(report);
   renderClaims(claims, report);
-  renderEvidence(Array.isArray(evidence) ? evidence : []);
+  renderEvidence(Array.isArray(evidence) ? evidence : [], report);
   renderAgents(report.multi_agent_report);
   renderSignals(Array.isArray(report.linguistic_flags) ? report.linguistic_flags : []);
   renderModel(report.model_run, report.agent_analysis);

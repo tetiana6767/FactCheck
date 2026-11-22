@@ -45,16 +45,22 @@ class OpenRouterWebSearchGateway:
                 {
                     "role": "system",
                     "content": (
-                        "Ти шукаєш першоджерела для фактчекінгу. Обов'язково "
-                        "скористайся вебпошуком. Не вигадуй посилань і не роби "
-                        "остаточного висновку без джерел. Відповідай українською."
+                        "Ти шукаєш докази для фактчекінгу, а не намагаєшся "
+                        "підтвердити новину. Обов'язково виконай вебпошук. "
+                        "Шукай як підтвердження, так і прямі спростування. "
+                        "Якщо теза схожа на фейк, знайди офіційні контрдокази "
+                        "або матеріали надійних фактчекерів. Не вигадуй посилань "
+                        "і не роби висновку без джерел. Відповідай українською."
                     ),
                 },
                 {
                     "role": "user",
                     "content": (
-                        "Знайди надійні джерела, які підтверджують або "
-                        f"спростовують твердження: {claim.text}"
+                        "Перевір твердження у двох напрямках. Спочатку знайди "
+                        "незалежні підтвердження, потім окремо пошукай "
+                        "спростування за словами «фактчек», «фейк», «неправда» "
+                        "або їхніми відповідниками мовою джерела. Надай "
+                        f"цитовані результати для твердження: {claim.text}"
                     ),
                 },
             ],
@@ -65,8 +71,11 @@ class OpenRouterWebSearchGateway:
                         "engine": self._settings.web_search_engine,
                         "mode": self._settings.web_search_mode,
                         "max_results": self._settings.web_search_max_results,
-                        "max_total_results": self._settings.web_search_max_results,
-                        "max_uses": 1,
+                        "max_total_results": (
+                            self._settings.web_search_max_results
+                            * self._settings.web_search_max_uses
+                        ),
+                        "max_uses": self._settings.web_search_max_uses,
                         "max_characters": 1_500,
                     },
                 }
